@@ -1,0 +1,43 @@
+import requests
+import json
+
+def fetch_incidents(instance_name, auth):
+    url = f"https://{instance_name}.service-now.com/api/now/table/incident"
+    
+    # Modify the query as per your ServiceNow instance's requirements
+    query = "resolved_atISNOTEMPTY"  # Fetch incidents that have been resolved
+
+    response = requests.get(url, auth=auth, params={
+        'sysparm_query': query,
+        'sysparm_fields': 'number,calendar_duration,resolved_at',
+        'sysparm_limit': 600  # Adjust as needed
+    })
+    
+    data = response.json()
+    
+    if 'result' not in data:
+        print("No data found or API error.")
+        return []
+    
+    return data['result']
+
+instance_name = 'ukg'  # Replace with your ServiceNow instance name
+username = 'svcManagerDashboard'  # Replace with your ServiceNow username
+password = 'G9g_BHn!VU{fy>VZ,X8w(x9.gw*UvW2(@{klJF>}'  # Replace with your ServiceNow password
+auth = (username, password)
+
+# Fetch incident data
+incidents = fetch_incidents(instance_name, auth)
+
+# Display data in a formatted table
+print("\nIncident Data:")
+print("=" * 60)
+print(f"{'Incident Number':<20} {'Elapsed Time':<20} {'Resolved Date':<20}")
+print("=" * 60)
+
+for incident in incidents:
+    number = incident.get('number', 'N/A')
+    elapsed_time = incident.get('calendar_duration', 'N/A')  # Directly fetch elapsed time
+    resolved_date = incident.get('resolved_at', 'N/A')
+
+    print(f"{number:<20} {elapsed_time:<20} {resolved_date:<20}")
